@@ -22,12 +22,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class StackExchangeChat {
-    private final static Logger logger = Logger.getLogger(StackExchangeChat.class.getName());
-    private final EnumMap<SESite, HashMap<Integer, HtmlPage>> chatMap = new EnumMap<>(SESite.class);
-    private boolean loggedIn = true;
-    private final WebClient webClient;
-    private final JSONChatConnection jsonChatConnection;
-    private final JavaBot javaBot;
+
+    private final static Logger                               logger   = Logger.getLogger(StackExchangeChat.class.getName());
+
+    private final EnumMap<SESite, HashMap<Integer, HtmlPage>> chatMap  = new EnumMap<>(SESite.class);
+
+    private boolean                                           loggedIn = true;
+
+    private final WebClient                                   webClient;
+
+    private final JSONChatConnection                          jsonChatConnection;
+
+    private final JavaBot                                     javaBot;
 
     public StackExchangeChat(JavaBot javaBot) {
         this.javaBot = javaBot;
@@ -51,18 +57,16 @@ public class StackExchangeChat {
             loginForm.getInputByName("email").setValueAttribute(email);
             loginForm.getInputByName("password").setValueAttribute(password);
             WebResponse response = loginForm.getInputByName("submit-button").click().getWebResponse();
-            loggedIn = (response.getStatusCode() == 200);
-            
+            loggedIn = response.getStatusCode() == 200;
+
             String logMessage;
-            if(loggedIn) {
+            if (loggedIn)
                 logMessage = String.format("Logged in to %s with email %s", site.getRootUrl(), email);
-            } else {
-                logMessage = String.format("Login failed. Got status code %d", response.getStatusCode());
-            }
+            else logMessage = String.format("Login failed. Got status code %d", response.getStatusCode());
             logger.info(logMessage);
-            
+
             return loggedIn;
-        } catch (IOException e) {
+        } catch(IOException e) {
             e.printStackTrace();
         }
         return false;
@@ -73,11 +77,11 @@ public class StackExchangeChat {
     }
 
     public boolean joinChat(SESite site, int chatId) {
-        if(!loggedIn) {
+        if ( !loggedIn) {
             logger.warning("Not logged in. Cannot join chat.");
             return false;
         }
-        if(chatMap.containsKey(site) && chatMap.get(site).containsKey(chatId)) {
+        if (chatMap.containsKey(site) && chatMap.get(site).containsKey(chatId)) {
             logger.warning("Already in that room.");
             return false;
         }
@@ -88,7 +92,7 @@ public class StackExchangeChat {
             jsonChatConnection.setEnabled(true);
             addChatPage(site, chatId, chatPage);
             logger.info("Joined room.");
-        } catch (IOException e) {
+        } catch(IOException e) {
             e.printStackTrace();
             return false;
         }
@@ -97,49 +101,43 @@ public class StackExchangeChat {
 
     private void addChatPage(SESite site, int id, HtmlPage page) {
         HashMap<Integer, HtmlPage> siteMap = chatMap.get(site);
-        if(siteMap == null) {
+        if (siteMap == null)
             siteMap = new HashMap<>();
-        }
         siteMap.put(id, page);
         chatMap.put(site, siteMap);
     }
 
     protected void handleChatEvents(JSONChatEvents events) {
-        for(JSONChatEvent event : events.getEvents()) {
-            switch(event.getEvent_type()) {
-                case ChatEventType.CHAT_MESSAGE:
-                    String message = Jsoup.parse(event.getContent()).text();
-                    ChatMessage chatMessage = new ChatMessage(
-                            events.getSite(), event.getRoom_id(), event.getRoom_name(),
-                            event.getUser_name(), event.getUser_id(), message);
-                    javaBot.queueMessage(chatMessage);
-                    break;
+        for (JSONChatEvent event : events.getEvents())
+            switch (event.getEvent_type()) {
+            case ChatEventType.CHAT_MESSAGE:
+                String message = Jsoup.parse(event.getContent()).text();
+                ChatMessage chatMessage = new ChatMessage(events.getSite(), event.getRoom_id(), event.getRoom_name(), event.getUser_name(), event.getUser_id(), message);
+                javaBot.queueMessage(chatMessage);
+                break;
             }
-        }
     }
 
     public synchronized boolean sendMessage(SESite site, int chatId, String message) {
         try {
             HashMap<Integer, HtmlPage> map = chatMap.get(site);
             HtmlPage page = map.get(chatId);
-            if (page == null) return false;
+            if (null == page)
+                return false;
             String fkey = page.getElementById("fkey").getAttribute("value");
-            WebRequest r = new WebRequest(
-                    new URL(String.format("http://chat.%s.com/chats/%d/messages/new", site.getDir(), chatId)),
-                    HttpMethod.POST);
+            WebRequest r = new WebRequest(new URL(String.format("http://chat.%s.com/chats/%d/messages/new", site.getDir(), chatId)), HttpMethod.POST);
             ArrayList<NameValuePair> params = new ArrayList<>();
             params.add(new NameValuePair("fkey", fkey));
             params.add(new NameValuePair("text", message));
             r.setRequestParameters(params);
             WebResponse response = webClient.loadWebResponse(r);
-            if(response.getStatusCode() != 200) {
-                logger.warning(String.format("Could not send message. Response(%d): %s",
-                        response.getStatusCode(), response.getStatusMessage()));
+            if (response.getStatusCode() != 200) {
+                logger.warning(String.format("Could not send message. Response(%d): %s", response.getStatusCode(), response.getStatusMessage()));
                 return false;
             }
             logger.info("POST " + r.toString());
             return true;
-        } catch (IOException e) {
+        } catch(IOException e) {
             e.printStackTrace();
         }
         return false;

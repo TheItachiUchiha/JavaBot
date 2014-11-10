@@ -7,7 +7,7 @@ import java.net.URL;
 /**
  * Generates locations to the destinated address.<br>
  * SEChat @ com.gmail.inverseconduit
- * 
+ *
  * @author Unihedron<<a href="mailto:vincentyification@gmail.com"
  *         >vincentyification@gmail.com</a>>
  */
@@ -17,17 +17,20 @@ public enum SESite {
     META_STACK_EXCHANGE("meta." + STACK_EXCHANGE.dir);
 
     private final String dir;
+
     private final String rootUrl;
+
     private final String loginUrl;
 
     SESite(String dir) {
         this.dir = dir;
-        this.rootUrl = "https://" + dir + ".com/";
-        this.loginUrl = rootUrl + "users/login";
+        rootUrl = "https://" + dir + ".com/";
+        loginUrl = rootUrl + "users/login";
     }
 
     public String urlToRoom(int id) throws IllegalArgumentException {
-        if (id <= 0) throw new IllegalArgumentException("id must be a positive number.");
+        if (id <= 0)
+            throw new IllegalArgumentException("id must be a positive number.");
         return "http://chat." + dir + ".com/rooms/" + id;
     }
 
@@ -40,9 +43,9 @@ public enum SESite {
     }
 
     public static SESite fromUrl(URL url) {
-        for(SESite site : SESite.values()) {
-            if(url.toString().contains(site.dir)) return site;
-        }
+        for (SESite site : SESite.values())
+            if (url.toString().contains(site.dir))
+                return site;
         return null;
     }
 

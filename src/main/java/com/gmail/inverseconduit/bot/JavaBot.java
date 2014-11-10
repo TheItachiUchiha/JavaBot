@@ -12,7 +12,6 @@ import groovy.lang.GroovyShell;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
@@ -28,8 +27,6 @@ import com.gmail.inverseconduit.datatype.ChatMessage;
 public final class JavaBot extends AbstractBot {
 
     private final StackExchangeChat             seChat;
-
-    private final ArrayList<MessageListener>    listeners     = new ArrayList<>();
 
     private final Binding                       scriptBinding = new Binding();
 

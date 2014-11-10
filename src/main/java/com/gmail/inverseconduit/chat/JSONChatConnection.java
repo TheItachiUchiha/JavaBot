@@ -7,8 +7,9 @@ import com.gargoylesoftware.htmlunit.util.WebConnectionWrapper;
 import com.gmail.inverseconduit.SESite;
 import com.gmail.inverseconduit.datatype.JSONChatEvents;
 import com.google.gson.Gson;
-
 import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class JSONChatConnection extends WebConnectionWrapper {
 
@@ -25,15 +26,22 @@ public class JSONChatConnection extends WebConnectionWrapper {
 
     @Override
     public WebResponse getResponse(WebRequest request) throws IOException {
-        WebResponse response = super.getResponse(request);
-        if (isEnabled)
+        final WebResponse response = super.getResponse(request);
+        if (isEnabled) {
+            final String rString = response.getContentAsString();
+            System.out.println(StringUtils.abbreviate("rString: " + rString, 50));
+            if ( !rString.contains("{\"events\":"))
+                return response;
             try {
-                String rString = response.getContentAsString();
-                String jsonString = rString.substring(rString.indexOf(":") + 1, rString.lastIndexOf("}"));
-                JSONChatEvents events = gson.fromJson(jsonString, JSONChatEvents.class);
+                final String jsonString = rString.substring(rString.indexOf(":") + 1, rString.lastIndexOf("}"));
+                System.out.println(StringUtils.abbreviate("jsonString: " + jsonString, 50));
+                final JSONChatEvents events = gson.fromJson(jsonString, JSONChatEvents.class);
                 events.setSite(SESite.fromUrl(request.getUrl()));
                 seBrowser.handleChatEvents(events);
-            } catch(Exception ignored) {}
+            } catch(Exception ex) {
+                ex.printStackTrace();
+            }
+        }
         return response;
     }
 
