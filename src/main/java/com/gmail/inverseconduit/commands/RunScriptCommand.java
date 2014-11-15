@@ -5,6 +5,7 @@ import groovy.lang.GroovyCodeSource;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -17,78 +18,86 @@ import com.gmail.inverseconduit.bot.JavaBot;
 import com.gmail.inverseconduit.chat.MessageListener;
 import com.gmail.inverseconduit.datatype.ChatMessage;
 import com.gmail.inverseconduit.javadoc.ClassInfo;
+import com.gmail.inverseconduit.javadoc.ClassPageLoader;
+import com.gmail.inverseconduit.javadoc.Java8PageParser;
 import com.gmail.inverseconduit.javadoc.JavadocDao;
-import com.gmail.inverseconduit.javadoc.JavadocZipDao;
 import com.gmail.inverseconduit.javadoc.MultipleClassesFoundException;
+import com.gmail.inverseconduit.javadoc.PageParser;
+import com.gmail.inverseconduit.javadoc.ZipClassPageLoader;
 import com.gmail.inverseconduit.utils.PrintUtils;
+import com.google.common.collect.ImmutableSet;
 
 public class RunScriptCommand implements MessageListener {
 	private static final Logger logger = Logger.getLogger(RunScriptCommand.class.getName());
-	private static final JavadocDao javadocDao;
+	private static final JavadocDao javadocDao = new JavadocDao();
 	static {
-		if (Files.isDirectory(BotConfig.JAVADOCS_DIR)) {
+		Path java8Api = BotConfig.JAVADOCS_DIR.resolve("java8.zip");
+		if (Files.exists(java8Api)) {
 			try {
-				javadocDao = new JavadocZipDao(BotConfig.JAVADOCS_DIR);
+				ClassPageLoader loader = new ZipClassPageLoader(java8Api);
+				PageParser parser = new Java8PageParser(loader);
+				javadocDao.addJavadocApi(parser);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-		} else {
-			javadocDao = null;
 		}
 	}
 
-	private final Set<Integer> userIds = new HashSet<>();
+	private final Set<Integer> userIds;
 	{
-		userIds.add(3622940);
-		userIds.add(2272617);
-		userIds.add(1803692);
+		ImmutableSet.Builder<Integer> builder = ImmutableSet.builder();
+		builder.add(3622940);
+		builder.add(2272617);
+		builder.add(1803692);
+
+		userIds = builder.build();
 	}
 	private final Set<Integer> blacklist = new HashSet<>();
 
 	private final Pattern messageRegex = Pattern.compile("^" + Pattern.quote(BotConfig.TRIGGER) + "(.*?):(.*)");
 
 	@Override
-    public void onMessage(AbstractBot bot, ChatMessage msg) {
+	public void onMessage(AbstractBot bot, ChatMessage msg) {
 		//FIXME: Decouple the implementation from JavaBot class!
 		JavaBot jBot = (JavaBot) bot;
-        try {
-            logger.finest("Entered onMessage for RunScriptCommand");
-            
-            if (!userIds.contains(msg.getUserId()) || blacklist.contains(msg.getUserId()))  {
-            	logger.finest("Ignoring message");
-            	return;
-            }
-            
-            String message = msg.getMessage();
-            Matcher messageMatcher = messageRegex.matcher(message);
-            if (!messageMatcher.find()){
-            	logger.finest("Message is not a bot command.");
-            	return;
-            }
-            
-            String command = messageMatcher.group(1);
-            String commandText = messageMatcher.group(2);
-            switch(command){
-            case "load":
-            	compileAndCache(jBot, msg, commandText);
-            	break;
-            case "eval":
-            	evaluateGroovy(jBot, msg, commandText);
-            	break;
-            case "java":
-            	compileAndExecuteMain(jBot, msg, commandText);
-            	break;
-            case "javadoc":
-            	javadoc(jBot, msg, commandText);
-            	break;
-            default:
-            	jBot.sendMessage(msg.getSite(), msg.getRoomId(), "Sorry, I don't know that command. >.<");
-            	break;
-            }
-        } catch(Exception ex) {
-            jBot.sendMessage(msg.getSite(), msg.getRoomId(), PrintUtils.FixedFont(ex.getMessage()));
-        }
-    }
+		try {
+			logger.finest("Entered onMessage for RunScriptCommand");
+
+			if (!userIds.contains(msg.getUserId()) || blacklist.contains(msg.getUserId())) {
+				logger.finest("Ignoring message");
+				return;
+			}
+
+			String message = msg.getMessage();
+			Matcher messageMatcher = messageRegex.matcher(message);
+			if (!messageMatcher.find()) {
+				logger.finest("Message is not a bot command.");
+				return;
+			}
+
+			String command = messageMatcher.group(1);
+			String commandText = messageMatcher.group(2);
+			switch (command) {
+			case "load":
+				compileAndCache(jBot, msg, commandText);
+				break;
+			case "eval":
+				evaluateGroovy(jBot, msg, commandText);
+				break;
+			case "java":
+				compileAndExecuteMain(jBot, msg, commandText);
+				break;
+			case "javadoc":
+				javadoc(jBot, msg, commandText);
+				break;
+			default:
+				jBot.sendMessage(msg.getSite(), msg.getRoomId(), "Sorry, I don't know that command. >.<");
+				break;
+			}
+		} catch (Exception ex) {
+			jBot.sendMessage(msg.getSite(), msg.getRoomId(), PrintUtils.FixedFont(ex.getMessage()));
+		}
+	}
 
 	private void evaluateGroovy(JavaBot bot, ChatMessage msg, String commandText) {
 		logger.finest("Evaluating Groovy Script");
@@ -102,38 +111,33 @@ public class RunScriptCommand implements MessageListener {
 		bot.sendMessage(msg.getSite(), msg.getRoomId(), "Thanks, I'll remember that.");
 	}
 
-	private void compileAndExecuteMain(JavaBot bot, ChatMessage msg, String commandText) throws IllegalAccessException,
-			InvocationTargetException, NoSuchMethodException {
+	private void compileAndExecuteMain(JavaBot bot, ChatMessage msg, String commandText) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
 		logger.finest("Compiling class for execution");
 		Object gClass = bot.getGroovyLoader().parseClass(new GroovyCodeSource(commandText, "UserScript", "/sandboxScript"), false);
-		String result = ((Class) gClass).getMethod("main", String[].class).invoke(null, ((Object) new String[]{""})).toString();
+		String result = ((Class) gClass).getMethod("main", String[].class).invoke(null, ((Object) new String[] { "" })).toString();
 		bot.sendMessage(msg.getSite(), msg.getRoomId(), result);
 	}
 
 	private void javadoc(JavaBot bot, ChatMessage msg, String commandText) throws IOException {
 		String message;
-		if (javadocDao == null) {
-			message = "Sorry, I can't answer that.  My Javadocs folder isn't configured!";
-		} else {
-			try {
-				ClassInfo info = javadocDao.getClassInfo(commandText);
-				if (info == null) {
-					message = "Sorry, I never heard of that class. :(";
-				} else {
-					message = info.getDescription();
-					int pos = message.indexOf("\n\n");
-					if (pos >= 0) {
-						//just display the first paragraph
-						message = message.substring(0, pos);
-					}
+		try {
+			ClassInfo info = javadocDao.getClassInfo(commandText);
+			if (info == null) {
+				message = "Sorry, I never heard of that class. :(";
+			} else {
+				message = info.getDescription();
+				int pos = message.indexOf("\n\n");
+				if (pos >= 0) {
+					//just display the first paragraph
+					message = message.substring(0, pos);
 				}
-			} catch (MultipleClassesFoundException e) {
-				StringBuilder sb = new StringBuilder("Which one do you mean?");
-				for (String name : e.getClasses()) {
-					sb.append("\n    ").append(name);
-				}
-				message = toString();
 			}
+		} catch (MultipleClassesFoundException e) {
+			StringBuilder sb = new StringBuilder("Which one do you mean?");
+			for (String name : e.getClasses()) {
+				sb.append("\n    ").append(name);
+			}
+			message = toString();
 		}
 
 		bot.sendMessage(msg.getSite(), msg.getRoomId(), message);

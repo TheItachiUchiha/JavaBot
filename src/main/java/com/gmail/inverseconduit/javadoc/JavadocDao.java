@@ -1,21 +1,69 @@
 package com.gmail.inverseconduit.javadoc;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
- * Retrieves the Javadoc information of a class.
+ * Retrieves class information from Javadoc files.
  * @author Michael Angstadt
  */
-public interface JavadocDao {
+public class JavadocDao {
+	private final Multimap<String, String> simpleToFullClassNames = HashMultimap.create();
+	private final Map<String, ClassInfo> cache = Collections.synchronizedMap(new HashMap<>());
+	private final List<PageParser> parsers = new ArrayList<>();
+
 	/**
-	 * Gets the Javadoc info of a class.
-	 * @param className can either be the simple class name (e.g. "String",
-	 * case-insensitive) or the fully-qualified class name (e.g.
-	 * "java.lang.String")
-	 * @return the class info or null if not found
-	 * @throws MultipleClassesFoundException if a simple class name was passed
-	 * into the method and multiple classes were found with that name
-	 * @throws IOException if there's a problem reading a ZIP file
+	 * Adds a library's Javadoc API to this DAO.
+	 * @param parser parses the API
+	 * @throws IOException if there's a problem reading from the parser
 	 */
-	ClassInfo getClassInfo(String className) throws IOException, MultipleClassesFoundException;
+	public void addJavadocApi(PageParser parser) throws IOException {
+		//add all the class names to the simple name index
+		for (String fullName : parser.getAllClassNames()) {
+			int dotPos = fullName.lastIndexOf('.');
+			String simpleName = fullName.substring(dotPos + 1);
+
+			simpleToFullClassNames.put(simpleName.toLowerCase(), fullName);
+		}
+
+		parsers.add(parser);
+	}
+
+	public ClassInfo getClassInfo(String className) throws IOException, MultipleClassesFoundException {
+		//convert simple name to fully-qualified name
+		if (!className.contains(".")) {
+			Collection<String> names = simpleToFullClassNames.get(className.toLowerCase());
+			if (names.isEmpty()) {
+				return null;
+			}
+			if (names.size() > 1) {
+				throw new MultipleClassesFoundException(names);
+			}
+
+			className = names.iterator().next();
+		}
+
+		ClassInfo info = cache.get(className);
+		if (info != null) {
+			return info;
+		}
+
+		for (PageParser parser : parsers) {
+			info = parser.getClassInfo(className);
+			if (info != null) {
+				cache.put(className, info);
+				return info;
+			}
+		}
+
+		return null;
+	}
 }
