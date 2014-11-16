@@ -18,14 +18,14 @@ import org.junit.Test;
 /**
  * @author Michael Angstadt
  */
-public class ZipClassPageLoaderTest {
+public class ZipPageLoaderTest {
 	private final Path folder = Paths.get("src", "test", "resources", "com", "gmail", "inverseconduit", "javadoc");
 	private final Path file = folder.resolve("javadoc-file.zip");
-	private final ClassPageLoader loader;
+	private final PageLoader loader;
 
 	{
 		try {
-			loader = new ZipClassPageLoader(file);
+			loader = new ZipPageLoader(file);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -49,12 +49,12 @@ public class ZipClassPageLoaderTest {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void getAllClassesFiles_no_allclasses_file() throws Exception {
-		new ZipClassPageLoader(folder.resolve("javadoc-without-allclasses-frame.zip"));
+		new ZipPageLoader(folder.resolve("javadoc-without-allclasses-frame.zip"));
 	}
 
 	@Test(expected = FileSystemNotFoundException.class)
 	public void getAllClassesFiles_does_not_exist() throws Exception {
-		new ZipClassPageLoader(Paths.get("foobar.zip"));
+		new ZipPageLoader(Paths.get("foobar.zip"));
 		
 	}
 

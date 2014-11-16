@@ -15,7 +15,7 @@ import java.nio.file.Paths;
  * "allclasses-frame.html" file.
  * @author Michael Angstadt
  */
-public class ZipClassPageLoader implements ClassPageLoader {
+public class ZipPageLoader implements PageLoader {
 	private static final String allClassesFrameFileName = "allclasses-frame.html";
 	private final Path file;
 
@@ -25,7 +25,7 @@ public class ZipClassPageLoader implements ClassPageLoader {
 	 * @throws IllegalArgumentException if there is no "allclasses-frame.html"
 	 * file at the root
 	 */
-	public ZipClassPageLoader(Path file) throws IOException {
+	public ZipPageLoader(Path file) throws IOException {
 		//make sure it contains the "allclasses-frame.html" file
 		try (FileSystem fs = FileSystems.newFileSystem(file, null)) {
 			Path allClassesFile = fs.getPath("/" + allClassesFrameFileName);

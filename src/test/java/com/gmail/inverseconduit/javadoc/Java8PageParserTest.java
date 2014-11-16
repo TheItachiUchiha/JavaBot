@@ -15,7 +15,7 @@ import org.junit.Test;
 public class Java8PageParserTest {
 	@Test
 	public void getAllClasses() throws Exception {
-		Java8PageParser parser = new Java8PageParser(new ClassPageLoader() {
+		Java8PageParser parser = new Java8PageParser(new PageLoader() {
 			@Override
 			public InputStream getClassPage(String className) throws IOException {
 				return null;
@@ -41,7 +41,7 @@ public class Java8PageParserTest {
 
 	@Test
 	public void getClassInfo() throws Exception {
-		Java8PageParser parser = new Java8PageParser(new ClassPageLoader() {
+		Java8PageParser parser = new Java8PageParser(new PageLoader() {
 			@Override
 			public InputStream getClassPage(String className) throws IOException {
 				return getClass().getResourceAsStream("String.html");

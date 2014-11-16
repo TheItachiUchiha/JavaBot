@@ -7,7 +7,7 @@ import java.io.InputStream;
  * Loads Javadoc HTML pages
  * @author Michael Angstadt
  */
-public interface ClassPageLoader {
+public interface PageLoader {
 	/**
 	 * Gets an input stream to the HTML page for a given class.
 	 * @param className the fully qualified class name (e.g. "java.lang.String")

@@ -17,12 +17,12 @@ import org.jsoup.select.NodeVisitor;
  * @author Michael Angstadt
  */
 public class Java8PageParser implements PageParser {
-	private final ClassPageLoader loader;
+	private final PageLoader loader;
 
 	/**
 	 * @param loader loads files from the Javadocs
 	 */
-	public Java8PageParser(ClassPageLoader loader) {
+	public Java8PageParser(PageLoader loader) {
 		this.loader = loader;
 	}
 

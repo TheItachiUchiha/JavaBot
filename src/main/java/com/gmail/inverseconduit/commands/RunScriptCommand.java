@@ -18,12 +18,12 @@ import com.gmail.inverseconduit.bot.JavaBot;
 import com.gmail.inverseconduit.chat.MessageListener;
 import com.gmail.inverseconduit.datatype.ChatMessage;
 import com.gmail.inverseconduit.javadoc.ClassInfo;
-import com.gmail.inverseconduit.javadoc.ClassPageLoader;
+import com.gmail.inverseconduit.javadoc.PageLoader;
 import com.gmail.inverseconduit.javadoc.Java8PageParser;
 import com.gmail.inverseconduit.javadoc.JavadocDao;
 import com.gmail.inverseconduit.javadoc.MultipleClassesFoundException;
 import com.gmail.inverseconduit.javadoc.PageParser;
-import com.gmail.inverseconduit.javadoc.ZipClassPageLoader;
+import com.gmail.inverseconduit.javadoc.ZipPageLoader;
 import com.gmail.inverseconduit.utils.PrintUtils;
 import com.google.common.collect.ImmutableSet;
 
@@ -34,7 +34,7 @@ public class RunScriptCommand implements MessageListener {
 		Path java8Api = BotConfig.JAVADOCS_DIR.resolve("java8.zip");
 		if (Files.exists(java8Api)) {
 			try {
-				ClassPageLoader loader = new ZipClassPageLoader(java8Api);
+				PageLoader loader = new ZipPageLoader(java8Api);
 				PageParser parser = new Java8PageParser(loader);
 				javadocDao.addJavadocApi(parser);
 			} catch (IOException e) {
