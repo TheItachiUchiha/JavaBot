@@ -23,7 +23,7 @@ public class Java8PageParserTest {
 
 			@Override
 			public InputStream getAllClassesFile() throws IOException {
-				return getClass().getResourceAsStream("allclasses-frame.html");
+				return getClass().getResourceAsStream("java8-allclasses-frame.html");
 			}
 		});
 
@@ -76,7 +76,7 @@ public class Java8PageParserTest {
 		"    String str = new String(data);\n" +
 		"\n" +
 		" \n" +
-		" ignore me \n", info.getDescription());
+		"ignore me \n", info.getDescription());
 		//@formatter:on
 	}
 }

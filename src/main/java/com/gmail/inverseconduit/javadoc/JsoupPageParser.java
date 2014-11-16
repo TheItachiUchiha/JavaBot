@@ -8,18 +8,19 @@ import java.util.List;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 
 /**
- * Parses the Java 8 Javadocs.
+ * Parses the Jsoup Javadocs.
  * @author Michael Angstadt
  */
-public class Java8PageParser implements PageParser {
+public class JsoupPageParser implements PageParser {
 	private final PageLoader loader;
 
 	/**
 	 * @param loader loads files from the Javadocs
 	 */
-	public Java8PageParser(PageLoader loader) {
+	public JsoupPageParser(PageLoader loader) {
 		this.loader = loader;
 	}
 
@@ -31,7 +32,7 @@ public class Java8PageParser implements PageParser {
 		}
 
 		List<String> classNames = new ArrayList<>();
-		for (Element element : document.select("ul li a")) {
+		for (Element element : document.select("a")) {
 			String url = element.attr("href");
 			int dotPos = url.lastIndexOf('.');
 			if (dotPos < 0) {
@@ -52,20 +53,49 @@ public class Java8PageParser implements PageParser {
 			document = parsePage(in);
 		}
 
-		String description;
-		{
-			Element descriptionElement = document.select(".block").first();
-			DescriptionNodeVisitor visitor = new DescriptionNodeVisitor();
-			descriptionElement.traverse(visitor);
-			description = visitor.getStringBuilder().toString();
-		}
+		JsoupDescriptionNodeVisitor visitor = new JsoupDescriptionNodeVisitor();
+		document.traverse(visitor);
 
 		//TODO support retrieval of method docs
 
-		return new ClassInfo(className, description);
+		return new ClassInfo(className, visitor.getStringBuilder().toString().trim());
 	}
 
 	private static Document parsePage(InputStream in) throws IOException {
-		return Jsoup.parse(in, "UTF-8", "https://docs.oracle.com/javase/8/docs/api/");
+		return Jsoup.parse(in, "UTF-8", "http://jsoup.org/apidocs/");
+	}
+
+	private static class JsoupDescriptionNodeVisitor extends DescriptionNodeVisitor {
+		private Boolean inDescription;
+
+		@Override
+		public void head(Node node, int depth) {
+			if (inDescription == Boolean.FALSE) {
+				return;
+			}
+
+			if (inDescription == null) {
+				if ("p".equals(node.nodeName())) {
+					//the first <p> signals the start of the description
+					inDescription = Boolean.TRUE;
+				} else {
+					return;
+				}
+			}
+
+			if ("dl".equals(node.nodeName())) {
+				inDescription = false;
+				return;
+			}
+
+			super.head(node, depth);
+		}
+
+		@Override
+		public void tail(Node node, int depth) {
+			if (inDescription == Boolean.TRUE) {
+				super.head(node, depth);
+			}
+		}
 	}
 }
