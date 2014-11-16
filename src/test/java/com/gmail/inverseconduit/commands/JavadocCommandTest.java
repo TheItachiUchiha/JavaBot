@@ -19,7 +19,7 @@ import com.gmail.inverseconduit.bot.JavaBot;
 import com.gmail.inverseconduit.datatype.ChatMessage;
 import com.gmail.inverseconduit.javadoc.ClassInfo;
 import com.gmail.inverseconduit.javadoc.JavadocDao;
-import com.gmail.inverseconduit.javadoc.PageParser;
+import com.gmail.inverseconduit.javadoc.JavadocLibrary;
 
 /**
  * @author Michael Angstadt
@@ -28,7 +28,7 @@ public class JavadocCommandTest {
 	private final JavadocDao dao = new JavadocDao();
 	{
 		try {
-			dao.addJavadocApi(new PageParser() {
+			dao.addJavadocApi(new JavadocLibrary(null, null) {
 				@Override
 				public List<String> getAllClassNames() throws IOException {
 					return Arrays.asList("java.util.ArrayList", "java.util.LinkedList", "java.awt.List", "java.util.List");

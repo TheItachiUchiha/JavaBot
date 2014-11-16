@@ -18,23 +18,33 @@ import com.google.common.collect.Multimap;
 public class JavadocDao {
 	private final Multimap<String, String> simpleToFullClassNames = HashMultimap.create();
 	private final Map<String, ClassInfo> cache = Collections.synchronizedMap(new HashMap<>());
-	private final List<PageParser> parsers = new ArrayList<>();
+	private final List<JavadocLibrary> libraries = new ArrayList<>();
 
 	/**
 	 * Adds a library's Javadoc API to this DAO.
-	 * @param parser parses the API
+	 * @param loader the page loader
+	 * @param parser the page parser
+	 * @throws IOException if there's a problem reading from the Javadocs
+	 */
+	public void addJavadocApi(PageLoader loader, PageParser parser) throws IOException {
+		addJavadocApi(new JavadocLibrary(loader, parser));
+	}
+
+	/**
+	 * Adds a library's Javadoc API to this DAO.
+	 * @param library the Javadoc library
 	 * @throws IOException if there's a problem reading from the parser
 	 */
-	public void addJavadocApi(PageParser parser) throws IOException {
+	public void addJavadocApi(JavadocLibrary library) throws IOException {
 		//add all the class names to the simple name index
-		for (String fullName : parser.getAllClassNames()) {
+		for (String fullName : library.getAllClassNames()) {
 			int dotPos = fullName.lastIndexOf('.');
 			String simpleName = fullName.substring(dotPos + 1);
 
 			simpleToFullClassNames.put(simpleName.toLowerCase(), fullName);
 		}
 
-		parsers.add(parser);
+		libraries.add(library);
 	}
 
 	/**
@@ -67,8 +77,8 @@ public class JavadocDao {
 			return info;
 		}
 
-		for (PageParser parser : parsers) {
-			info = parser.getClassInfo(className);
+		for (JavadocLibrary library : libraries) {
+			info = library.getClassInfo(className);
 			if (info != null) {
 				cache.put(className, info);
 				return info;

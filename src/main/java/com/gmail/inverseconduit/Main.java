@@ -75,8 +75,8 @@ public class Main {
 		Path java8Api = dir.resolve("java8.zip");
 		if (Files.exists(java8Api)) {
 			PageLoader loader = new ZipPageLoader(java8Api);
-			PageParser parser = new Java8PageParser(loader);
-			dao.addJavadocApi(parser);
+			PageParser parser = new Java8PageParser();
+			dao.addJavadocApi(loader, parser);
 		}
 
 		return dao;

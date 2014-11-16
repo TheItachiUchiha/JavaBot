@@ -1,11 +1,8 @@
 package com.gmail.inverseconduit.javadoc;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -15,22 +12,8 @@ import org.jsoup.nodes.Node;
  * @author Michael Angstadt
  */
 public class JsoupPageParser implements PageParser {
-	private final PageLoader loader;
-
-	/**
-	 * @param loader loads files from the Javadocs
-	 */
-	public JsoupPageParser(PageLoader loader) {
-		this.loader = loader;
-	}
-
 	@Override
-	public List<String> getAllClassNames() throws IOException {
-		Document document;
-		try (InputStream in = loader.getAllClassesFile()) {
-			document = parsePage(in);
-		}
-
+	public List<String> parseClassNames(Document document) {
 		List<String> classNames = new ArrayList<>();
 		for (Element element : document.select("a")) {
 			String url = element.attr("href");
@@ -47,22 +30,15 @@ public class JsoupPageParser implements PageParser {
 	}
 
 	@Override
-	public ClassInfo getClassInfo(String className) throws IOException {
-		Document document;
-		try (InputStream in = loader.getClassPage(className)) {
-			document = parsePage(in);
-		}
-
+	public ClassInfo parseClassPage(Document document, String className) {
 		JsoupDescriptionNodeVisitor visitor = new JsoupDescriptionNodeVisitor();
 		document.traverse(visitor);
-
-		//TODO support retrieval of method docs
-
 		return new ClassInfo(className, visitor.getStringBuilder().toString().trim());
 	}
 
-	private static Document parsePage(InputStream in) throws IOException {
-		return Jsoup.parse(in, "UTF-8", "http://jsoup.org/apidocs/");
+	@Override
+	public String getBaseUrl() {
+		return "http://jsoup.org/apidocs/";
 	}
 
 	private static class JsoupDescriptionNodeVisitor extends DescriptionNodeVisitor {

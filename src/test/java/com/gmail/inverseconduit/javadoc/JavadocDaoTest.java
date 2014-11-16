@@ -19,52 +19,47 @@ import org.mockito.Mockito;
  * @author Michael Angstadt
  */
 public class JavadocDaoTest {
-	private final JavadocDao dao;
+	private final JavadocDao dao = new JavadocDao();
 	{
-		PageParser javaPageParser = new PageParser() {
-			@Override
-			public List<String> getAllClassNames() throws IOException {
-				//@formatter:off
-				return Arrays.asList(
-					"javax.management.Attribute",
-					"javax.naming.directory.Attribute",
-					"java.lang.String"
-				);
-				//@formatter:on
-			}
-
-			@Override
-			public ClassInfo getClassInfo(String className) throws IOException {
-				if (className.startsWith("java.")) {
-					return new ClassInfo(className, "description - " + className);
-				}
-				return null;
-			}
-		};
-
-		PageParser jsoupPageParser = new PageParser() {
-			@Override
-			public List<String> getAllClassNames() throws IOException {
-				//@formatter:off
-				return Arrays.asList(
-					"org.jsoup.nodes.Attribute"
-				);
-				//@formatter:on
-			}
-
-			@Override
-			public ClassInfo getClassInfo(String className) throws IOException {
-				if (className.startsWith("org.")) {
-					return new ClassInfo(className, "description - " + className);
-				}
-				return null;
-			}
-		};
-
-		dao = new JavadocDao();
 		try {
-			dao.addJavadocApi(javaPageParser);
-			dao.addJavadocApi(jsoupPageParser);
+			dao.addJavadocApi(new JavadocLibrary(null, null) {
+				@Override
+				public List<String> getAllClassNames() throws IOException {
+					//@formatter:off
+					return Arrays.asList(
+						"javax.management.Attribute",
+						"javax.naming.directory.Attribute",
+						"java.lang.String"
+					);
+					//@formatter:on
+				}
+
+				@Override
+				public ClassInfo getClassInfo(String className) throws IOException {
+					if (className.startsWith("java.")) {
+						return new ClassInfo(className, "description - " + className);
+					}
+					return null;
+				}
+			});
+			dao.addJavadocApi(new JavadocLibrary(null, null) {
+				@Override
+				public List<String> getAllClassNames() throws IOException {
+					//@formatter:off
+					return Arrays.asList(
+						"org.jsoup.nodes.Attribute"
+					);
+					//@formatter:on
+				}
+
+				@Override
+				public ClassInfo getClassInfo(String className) throws IOException {
+					if (className.startsWith("org.")) {
+						return new ClassInfo(className, "description - " + className);
+					}
+					return null;
+				}
+			});
 		} catch (IOException e) {
 			//not thrown
 		}
@@ -114,7 +109,7 @@ public class JavadocDaoTest {
 
 	@Test
 	public void cache() throws Exception {
-		PageParser spy = Mockito.spy(new PageParser() {
+		JavadocLibrary spy = Mockito.spy(new JavadocLibrary(null, null) {
 			@Override
 			public List<String> getAllClassNames() throws IOException {
 				//@formatter:off

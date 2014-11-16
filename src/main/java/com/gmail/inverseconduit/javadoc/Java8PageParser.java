@@ -1,11 +1,8 @@
 package com.gmail.inverseconduit.javadoc;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -14,22 +11,8 @@ import org.jsoup.nodes.Element;
  * @author Michael Angstadt
  */
 public class Java8PageParser implements PageParser {
-	private final PageLoader loader;
-
-	/**
-	 * @param loader loads files from the Javadocs
-	 */
-	public Java8PageParser(PageLoader loader) {
-		this.loader = loader;
-	}
-
 	@Override
-	public List<String> getAllClassNames() throws IOException {
-		Document document;
-		try (InputStream in = loader.getAllClassesFile()) {
-			document = parsePage(in);
-		}
-
+	public List<String> parseClassNames(Document document) {
 		List<String> classNames = new ArrayList<>();
 		for (Element element : document.select("ul li a")) {
 			String url = element.attr("href");
@@ -46,12 +29,7 @@ public class Java8PageParser implements PageParser {
 	}
 
 	@Override
-	public ClassInfo getClassInfo(String className) throws IOException {
-		Document document;
-		try (InputStream in = loader.getClassPage(className)) {
-			document = parsePage(in);
-		}
-
+	public ClassInfo parseClassPage(Document document, String className) {
 		String description;
 		{
 			Element descriptionElement = document.select(".block").first();
@@ -60,12 +38,11 @@ public class Java8PageParser implements PageParser {
 			description = visitor.getStringBuilder().toString();
 		}
 
-		//TODO support retrieval of method docs
-
 		return new ClassInfo(className, description);
 	}
 
-	private static Document parsePage(InputStream in) throws IOException {
-		return Jsoup.parse(in, "UTF-8", "https://docs.oracle.com/javase/8/docs/api/");
+	@Override
+	public String getBaseUrl() {
+		return "https://docs.oracle.com/javase/8/docs/api/";
 	}
 }

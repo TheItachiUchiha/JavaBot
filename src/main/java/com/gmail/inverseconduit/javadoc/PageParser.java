@@ -1,7 +1,8 @@
 package com.gmail.inverseconduit.javadoc;
 
-import java.io.IOException;
 import java.util.List;
+
+import org.jsoup.nodes.Document;
 
 /**
  * Parses Javadoc HTML pages.
@@ -9,18 +10,23 @@ import java.util.List;
  */
 public interface PageParser {
 	/**
-	 * Gets the fully-qualified names of all the classes.
-	 * @return the fully qualified names of each class
-	 * @throws IOException if there's a problem reading the fully qualified
-	 * names
+	 * Parses the fully-qualified names of all the classes.
+	 * @param document the HTML document
+	 * @return the fully qualified names of each class names
 	 */
-	public List<String> getAllClassNames() throws IOException;
+	public List<String> parseClassNames(Document document);
 
 	/**
-	 * Gets information on a class.
+	 * Parses a class page.
+	 * @param document the HTML document
 	 * @param className the fully-qualified class name
-	 * @return the class info or null if the class cannot be found
-	 * @throws IOException if there's a problem reading the class info
+	 * @return the class info
 	 */
-	public ClassInfo getClassInfo(String className) throws IOException;
+	public ClassInfo parseClassPage(Document document, String className);
+
+	/**
+	 * Gets the base URL to use when parsing the document.
+	 * @return the base URL
+	 */
+	public String getBaseUrl();
 }

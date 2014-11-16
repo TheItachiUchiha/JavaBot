@@ -2,11 +2,12 @@ package com.gmail.inverseconduit.javadoc;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.junit.Test;
 
 /**
@@ -15,19 +16,13 @@ import org.junit.Test;
 public class Java8PageParserTest {
 	@Test
 	public void getAllClasses() throws Exception {
-		Java8PageParser parser = new Java8PageParser(new PageLoader() {
-			@Override
-			public InputStream getClassPage(String className) throws IOException {
-				return null;
-			}
+		Document document;
+		try (InputStream in = getClass().getResourceAsStream("java8-allclasses-frame.html")) {
+			document = Jsoup.parse(in, "UTF-8", "");
+		}
 
-			@Override
-			public InputStream getAllClassesFile() throws IOException {
-				return getClass().getResourceAsStream("java8-allclasses-frame.html");
-			}
-		});
-
-		List<String> actual = parser.getAllClassNames();
+		Java8PageParser parser = new Java8PageParser();
+		List<String> actual = parser.parseClassNames(document);
 		//@formatter:off
 		List<String> expected = Arrays.asList(
 			"java.awt.List",
@@ -41,19 +36,13 @@ public class Java8PageParserTest {
 
 	@Test
 	public void getClassInfo() throws Exception {
-		Java8PageParser parser = new Java8PageParser(new PageLoader() {
-			@Override
-			public InputStream getClassPage(String className) throws IOException {
-				return getClass().getResourceAsStream("String.html");
-			}
+		Document document;
+		try (InputStream in = getClass().getResourceAsStream("String.html")) {
+			document = Jsoup.parse(in, "UTF-8", "");
+		}
 
-			@Override
-			public InputStream getAllClassesFile() throws IOException {
-				return null;
-			}
-		});
-
-		ClassInfo info = parser.getClassInfo("java.lang.String");
+		Java8PageParser parser = new Java8PageParser();
+		ClassInfo info = parser.parseClassPage(document, "java.lang.String");
 		assertEquals("java.lang.String", info.getFullName());
 
 		//@formatter:off
