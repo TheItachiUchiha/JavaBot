@@ -15,7 +15,9 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
+
 import com.gmail.inverseconduit.datatype.ChatMessage;
+import com.gmail.inverseconduit.utils.PrintUtils;
 
 /**
  * Procrastination: I'll fix this javadoc comment later.<br>
@@ -24,7 +26,7 @@ import com.gmail.inverseconduit.datatype.ChatMessage;
  * @author Unihedron<<a href="mailto:vincentyification@gmail.com"
  *         >vincentyification@gmail.com</a>>
  */
-public final class JavaBot extends AbstractBot {
+public class JavaBot extends AbstractBot {
 
     private final StackExchangeChat             seChat;
 
@@ -77,8 +79,13 @@ public final class JavaBot extends AbstractBot {
             final ChatMessage message = messageQueue.take();
             System.out.println(message.toString());
             threadPool.execute(() -> {
-                for (MessageListener listener : getListeners())
-                    listener.onMessage(this, message);
+                for (MessageListener listener : getListeners()) {
+                	try {
+                		listener.onMessage(this, message);
+                	} catch (Exception e){
+                		sendMessage(message.getSite(), message.getRoomId(), PrintUtils.FixedFont(e.getMessage()));
+                	}
+                }
             });
         } catch(InterruptedException e) {
             e.printStackTrace();

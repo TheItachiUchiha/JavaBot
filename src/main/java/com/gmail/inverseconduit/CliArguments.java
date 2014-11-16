@@ -86,7 +86,10 @@ public class CliArguments {
 	 */
 	public Path javadocDir() {
 		String value = get("javadoc-dir");
-		return (value == null) ? null : Paths.get(value);
+		if (value == null) {
+			value = "javadocs";
+		}
+		return Paths.get(value);
 	}
 
 	/**

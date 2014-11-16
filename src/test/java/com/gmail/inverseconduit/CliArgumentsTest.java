@@ -2,7 +2,6 @@ package com.gmail.inverseconduit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Paths;
@@ -94,7 +93,7 @@ public class CliArgumentsTest {
 		CliArguments args;
 
 		args = new CliArguments();
-		assertNull(args.javadocDir());
+		assertEquals(Paths.get("javadocs"), args.javadocDir());
 
 		thrown.expect(OptionException.class);
 		args = new CliArguments("--javadoc-dir");
