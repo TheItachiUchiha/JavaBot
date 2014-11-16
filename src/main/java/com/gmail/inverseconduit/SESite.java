@@ -43,8 +43,9 @@ public enum SESite {
     }
 
     public static SESite fromUrl(URL url) {
+    	String urlStr = url.toString();
         for (SESite site : SESite.values())
-            if (url.toString().contains(site.dir))
+            if (urlStr.contains(site.dir))
                 return site;
         return null;
     }
