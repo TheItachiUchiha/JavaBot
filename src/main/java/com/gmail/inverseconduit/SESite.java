@@ -49,6 +49,13 @@ public enum SESite {
                 return site;
         return null;
     }
+    
+    public static SESite fromDir(String dir){
+        for (SESite site : SESite.values())
+            if (dir.equalsIgnoreCase(site.dir))
+                return site;
+        return null;
+    }
 
     public String getDir() {
         return dir;
