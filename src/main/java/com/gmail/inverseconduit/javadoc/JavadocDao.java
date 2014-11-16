@@ -37,6 +37,15 @@ public class JavadocDao {
 		parsers.add(parser);
 	}
 
+	/**
+	 * Gets the documentation on a class.
+	 * @param className a fully-qualified class name (e.g. "java.lang.String")
+	 * or a simple class name (e.g. "String").
+	 * @return the class documentation or null if the class was not found
+	 * @throws IOException if there's a problem reading the class's Javadocs
+	 * @throws MultipleClassesFoundException if a simple name was passed into
+	 * this method and multiple classes were found that have that name
+	 */
 	public ClassInfo getClassInfo(String className) throws IOException, MultipleClassesFoundException {
 		//convert simple name to fully-qualified name
 		if (!className.contains(".")) {
@@ -44,6 +53,7 @@ public class JavadocDao {
 			if (names.isEmpty()) {
 				return null;
 			}
+
 			if (names.size() > 1) {
 				throw new MultipleClassesFoundException(names);
 			}
@@ -51,6 +61,7 @@ public class JavadocDao {
 			className = names.iterator().next();
 		}
 
+		//check the cache
 		ClassInfo info = cache.get(className);
 		if (info != null) {
 			return info;
