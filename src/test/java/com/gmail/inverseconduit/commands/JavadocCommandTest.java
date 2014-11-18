@@ -38,9 +38,9 @@ public class JavadocCommandTest {
 				public ClassInfo getClassInfo(String className) throws IOException {
 					switch (className) {
 					case "java.util.ArrayList":
-						return new ClassInfo(className, className + " - para 1\n" + className + " - para 2");
+						return new ClassInfo(className, className + " - para 1\n" + className + " - para 2", "http://base/?java/util/ArrayList.html");
 					case "java.util.LinkedList":
-						return new ClassInfo(className, className + " - para 1");
+						return new ClassInfo(className, className + " - para 1", null);
 					}
 					return null;
 				}
@@ -81,14 +81,14 @@ public class JavadocCommandTest {
 	public void one_paragraph() {
 		ChatMessage chatMessage = new ChatMessage(SESite.STACK_OVERFLOW, 1, "Room", "User", 1, "!!javadoc:LinkedList");
 		cmd.onMessage(bot, chatMessage);
-		verify(bot).sendMessage(SESite.STACK_OVERFLOW, 1, "@User java.util.LinkedList - para 1");
+		verify(bot).sendMessage(SESite.STACK_OVERFLOW, 1, "@User **`java.util.LinkedList`**: java.util.LinkedList - para 1");
 	}
 
 	@Test
 	public void two_paragraphs() {
 		ChatMessage chatMessage = new ChatMessage(SESite.STACK_OVERFLOW, 1, "Room", "User", 1, "!!javadoc:arraylist");
 		cmd.onMessage(bot, chatMessage);
-		verify(bot).sendMessage(SESite.STACK_OVERFLOW, 1, "@User java.util.ArrayList - para 1");
+		verify(bot).sendMessage(SESite.STACK_OVERFLOW, 1, "@User [**`java.util.ArrayList`**](http://base/?java/util/ArrayList.html \"View the Javadocs\"): java.util.ArrayList - para 1");
 	}
 
 	@Test

@@ -38,7 +38,8 @@ public class Java8PageParser implements PageParser {
 			description = visitor.getStringBuilder().toString();
 		}
 
-		return new ClassInfo(className, description);
+		String url = getBaseUrl() + "?" + className.replace('.', '/') + ".html";
+		return new ClassInfo(className, description, url);
 	}
 
 	@Override

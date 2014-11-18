@@ -7,10 +7,12 @@ package com.gmail.inverseconduit.javadoc;
 public class ClassInfo {
 	private final String fullName;
 	private final String description;
+	private final String url;
 
-	public ClassInfo(String fullName, String description) {
+	public ClassInfo(String fullName, String description, String url) {
 		this.fullName = fullName;
 		this.description = description;
+		this.url = url;
 	}
 
 	/**
@@ -27,5 +29,13 @@ public class ClassInfo {
 	 */
 	public String getDescription() {
 		return description;
+	}
+
+	/**
+	 * Gets the URL where this class's Javadocs can be viewed online.
+	 * @return the URL or null if unknown
+	 */
+	public String getUrl() {
+		return url;
 	}
 }

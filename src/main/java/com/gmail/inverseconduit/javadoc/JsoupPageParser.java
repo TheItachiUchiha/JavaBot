@@ -33,7 +33,10 @@ public class JsoupPageParser implements PageParser {
 	public ClassInfo parseClassPage(Document document, String className) {
 		JsoupDescriptionNodeVisitor visitor = new JsoupDescriptionNodeVisitor();
 		document.traverse(visitor);
-		return new ClassInfo(className, visitor.getStringBuilder().toString().trim());
+		String description = visitor.getStringBuilder().toString().trim();
+
+		String url = getBaseUrl() + "?" + className.replace('.', '/') + ".html";
+		return new ClassInfo(className, description, url);
 	}
 
 	@Override

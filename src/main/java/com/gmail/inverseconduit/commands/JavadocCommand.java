@@ -36,13 +36,7 @@ public class JavadocCommand implements MessageListener {
 		String commandText = messageMatcher.group(1).trim();
 		String response;
 		try {
-			ClassInfo info;
-			try {
-				info = dao.getClassInfo(commandText);
-			} catch (IOException e) {
-				throw new RuntimeException("Problem getting Javadoc info.", e);
-			}
-
+			ClassInfo info = dao.getClassInfo(commandText);
 			if (info == null) {
 				response = "Sorry, I never heard of that class. :(";
 			} else {
@@ -52,7 +46,20 @@ public class JavadocCommand implements MessageListener {
 					//just display the first paragraph
 					response = response.substring(0, pos);
 				}
+
+				StringBuilder sb = new StringBuilder();
+				String url = info.getUrl();
+				if (url == null) {
+					sb.append("**`").append(info.getFullName()).append("`**: ");
+				} else {
+					sb.append("[**`").append(info.getFullName()).append("`**](").append(url).append(" \"View the Javadocs\"): ");
+				}
+
+				sb.append(response);
+				response = sb.toString();
 			}
+		} catch (IOException e) {
+			throw new RuntimeException("Problem getting Javadoc info.", e);
 		} catch (MultipleClassesFoundException e) {
 			StringBuilder sb = new StringBuilder("Which one do you mean?");
 			for (String name : e.getClasses()) {

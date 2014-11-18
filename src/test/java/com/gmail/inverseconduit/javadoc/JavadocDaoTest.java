@@ -37,7 +37,7 @@ public class JavadocDaoTest {
 				@Override
 				public ClassInfo getClassInfo(String className) throws IOException {
 					if (className.startsWith("java.")) {
-						return new ClassInfo(className, "description - " + className);
+						return new ClassInfo(className, "description - " + className, null);
 					}
 					return null;
 				}
@@ -55,7 +55,7 @@ public class JavadocDaoTest {
 				@Override
 				public ClassInfo getClassInfo(String className) throws IOException {
 					if (className.startsWith("org.")) {
-						return new ClassInfo(className, "description - " + className);
+						return new ClassInfo(className, "description - " + className, null);
 					}
 					return null;
 				}
@@ -122,7 +122,7 @@ public class JavadocDaoTest {
 			@Override
 			public ClassInfo getClassInfo(String className) throws IOException {
 				if (className.startsWith("java.")) {
-					return new ClassInfo(className, "description - " + className);
+					return new ClassInfo(className, "description - " + className, null);
 				}
 				return null;
 			}

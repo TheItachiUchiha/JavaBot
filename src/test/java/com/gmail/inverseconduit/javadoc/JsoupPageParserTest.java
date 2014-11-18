@@ -45,6 +45,7 @@ public class JsoupPageParserTest {
 		JsoupPageParser parser = new JsoupPageParser();
 		ClassInfo info = parser.parseClassPage(document, "org.jsoup.nodes.Attribute");
 		assertEquals("org.jsoup.nodes.Attribute", info.getFullName());
+		assertEquals("http://jsoup.org/apidocs/?org/jsoup/nodes/Attribute.html", info.getUrl());
 		assertEquals("A single key + value attribute. Keys are trimmed and normalised to lower-case.", info.getDescription());
 	}
 }

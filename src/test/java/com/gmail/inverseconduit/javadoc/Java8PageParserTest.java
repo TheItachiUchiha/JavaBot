@@ -44,6 +44,7 @@ public class Java8PageParserTest {
 		Java8PageParser parser = new Java8PageParser();
 		ClassInfo info = parser.parseClassPage(document, "java.lang.String");
 		assertEquals("java.lang.String", info.getFullName());
+		assertEquals("https://docs.oracle.com/javase/8/docs/api/?java/lang/String.html", info.getUrl());
 
 		//@formatter:off
 		assertEquals(
