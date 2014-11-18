@@ -52,6 +52,11 @@ public class Java8PageParserTest {
 		" **bold** text\n" +
 		" *italic* text\n" +
 		" *italic* text\n" +
+		" \\*asterisks\\*\n" +
+		" \\_underscores\\_\n" +
+		" \\[brackets\\]\n" +
+		" [Google Search](http://www.google.com \"with title\")\n" +
+		" [Bing Search](http://www.bing.com)\n" +
 		" Because String objects are immutable they can be shared. For example: \n" +
 		"\n" +
 		"\n" +
